@@ -1,0 +1,23 @@
+name = "create2"
+type = "javascript"
+# zone_id = ""
+account_id = ""
+# route = ""
+workers_dev = true
+compatibility_date = "2022-02-26"
+
+[build]
+command = "npm install && npm run build"
+[build.upload]
+format = "service-worker"
+[[kv_namespaces]]
+binding = "DATA"
+preview_id = ""
+id = ""
+[vars]
+ORIGINS = ""
+METHODS = ""
+CDN = ""
+BACKEND = ""
+DEFAULT_DOMAIN = ""
+SPOILER_CHAR = ""

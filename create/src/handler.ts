@@ -1,0 +1,179 @@
+import { Domain, Metadata } from './types'
+import { nanoid } from 'nanoid'
+import urlRegex from 'url-regex-safe'
+import { escape } from 'lodash'
+import { Chance } from 'chance'
+
+declare global {
+  // Vars
+  const ORIGINS: string
+  const METHODS: string
+  const CDN: string
+  const BACKEND: string
+  const DEFAULT_DOMAIN: string
+  const SPOILER_CHARS: string
+  // Namespaces
+  const DATA: KVNamespace
+}
+
+const chance = new Chance()
+
+export async function handleRequest(request: Request): Promise<Response> {
+  if (request.method !== 'POST')
+    return response(
+      JSON.stringify({ message: 'Invalid method' }),
+      405,
+      'application/json',
+    )
+  if (!request.headers.get('content-type')?.startsWith('multipart/form-data'))
+    return response(
+      { message: 'Invalid content type' },
+      400,
+      'application/json',
+    )
+
+  const form = await request.formData()
+  if (
+    !form.has('data') ||
+    !form.has('type') ||
+    !form.has('embed') ||
+    !form.has('domains') ||
+    !form.has('url')
+  )
+    return response({ message: 'Missing parameters' }, 403, 'application/json')
+
+  let data: File | string | ArrayBuffer | null
+
+  //@ts-ignore
+  const metadata: Metadata = {}
+
+  switch (form.get('type')) {
+    case 'url':
+      data = form.get('data')
+      if (typeof data !== 'string' || !data.match(urlRegex({ exact: true })))
+        return response({ message: 'Invalid url' }, 400, 'application/json')
+      if (!data.match(/(https?:\/\/)/gi)) data = `https://${data}`
+      metadata.size = data.length
+      break
+    case 'file':
+      data = form.get('data') as File
+      if (!data.type.match(/\w+\/[-+.\w]+/g) || data.size > 26214400)
+        return response({ message: 'Invalid file' }, 400, 'application/json')
+      metadata.mime = data.type
+      data = await data.arrayBuffer()
+      metadata.size = data.byteLength
+      break
+    default:
+      return response(
+        { message: 'Invalid data type (must be url or file)' },
+        400,
+        'application/json',
+      )
+  }
+  metadata.type = form.get('type') as 'url' | 'file'
+
+  const id =
+    form.get('url') === 'invisible'
+      ? chance.string({
+          length: 56,
+          pool: ['\u200B', '\u200C'].join(''),
+        })
+      : nanoid()
+
+  if (form.get('embed') === 'true' && metadata.type === 'file') {
+    metadata.embedData = ''
+
+    if (metadata.mime?.startsWith('image'))
+      metadata.embedData = `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${CDN}/${id}"><meta name="twitter:image:src" content="${CDN}/${id}"><meta property="og:image" content="${CDN}/${id}">`
+    if (metadata.mime?.startsWith('video'))
+      metadata.embedData = `<meta name="twitter:card" content="player"><meta name="twitter:player" content="${CDN}/${id}"><meta name="twitter:player:stream" content="${CDN}/${id}"><meta name="twitter:player:stream:content_type" content="${metadata.mime}">`
+
+    const color = form.get('color') as string | null
+    if (
+      color &&
+      color.match(
+        /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^\)]*\)/gi,
+      )
+    )
+      metadata.embedData = `${
+        metadata.embedData
+      }<meta name="theme-color" content="${escape(color)}">`
+
+    const title = form.get('title')
+    if (title && typeof title === 'string')
+      metadata.embedData = `${
+        metadata.embedData
+      }<meta name="twitter:title" content="${escape(
+        title,
+      )}"><meta property="og:title" content="${escape(title)}">`
+
+    const description = form.get('description')
+    if (description && typeof description === 'string')
+      metadata.embedData = `${
+        metadata.embedData
+      }<meta name="twitter:description" content="${escape(
+        description,
+      )}"><meta property="og:description" content="${escape(description)}">`
+  }
+  metadata.deletionCode = nanoid(22)
+  metadata.timezone = request.cf?.timezone
+    ? request.cf.timezone
+    : 'America/New_York'
+  metadata.time = Date.now()
+
+  let domain: string | string[] | Domain = form.has('domains')
+    ? (form.get('domains') as string)
+    : DEFAULT_DOMAIN
+  domain = domain.replace(/\s+/g, '').split('>')
+  domain.pop()
+  const domainsParsed: Domain[] = []
+
+  try {
+    for (const d of domain) {
+      const split = d.split('<')
+      domainsParsed.push({ name: split[0], real: split[1] === 'true' })
+    }
+
+    domain = domainsParsed[Math.floor(Math.random() * domainsParsed.length)]
+    console.log(domain.real, domain.name)
+    console.log(`id: ${id.length}.`)
+    console.log(JSON.stringify(metadata).length)
+    await DATA.put(encodeURI(id), data, { metadata })
+
+    return response(
+      {
+        url: `${form.get('show') === 'true' ? '\u200B' : ''}${
+          domain.real
+            ? `https://${domain.name}`
+            : `${domain.name}${SPOILER_CHARS}https://${BACKEND}`
+        }/${id}`,
+        deletionURL: `https://${BACKEND}/${id}?delete=${metadata.deletionCode}`,
+      },
+      200,
+      'application/json',
+    )
+  } catch (e) {
+    return response(
+      { message: 'Internal server error', error: e },
+      500,
+      'application/json',
+    )
+  }
+}
+
+function response(data: any, status: number, contentType: string): Response {
+  return new Response(
+    JSON.stringify({
+      success: !!status.toString().match(/(2\d?[0-9]|[0-9])/gm),
+      data,
+    }),
+    {
+      status: status,
+      headers: {
+        'content-type': contentType,
+        'access-control-allow-origin': ORIGINS,
+        'access-control-allow-methods': METHODS,
+      },
+    },
+  )
+}
