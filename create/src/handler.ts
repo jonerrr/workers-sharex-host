@@ -8,8 +8,8 @@ declare global {
   // Vars
   const ORIGINS: string
   const METHODS: string
-  const CDN: string
-  const BACKEND: string
+  const RAW: string
+  const RETRIEVE_DOMAIN: string
   const DEFAULT_DOMAIN: string
   const SPOILER_CHARS: string
   // Namespaces
@@ -19,6 +19,15 @@ declare global {
 const chance = new Chance()
 
 export async function handleRequest(request: Request): Promise<Response> {
+  if (request.method === 'OPTIONS')
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': ORIGINS,
+        'Access-Control-Allow-Methods': METHODS,
+        'access-control-allow-headers': 'content-type',
+      },
+    })
+
   if (request.method !== 'POST')
     return response(
       JSON.stringify({ message: 'Invalid method' }),
@@ -28,7 +37,7 @@ export async function handleRequest(request: Request): Promise<Response> {
   if (!request.headers.get('content-type')?.startsWith('multipart/form-data'))
     return response(
       { message: 'Invalid content type' },
-      400,
+      415,
       'application/json',
     )
 
@@ -50,7 +59,11 @@ export async function handleRequest(request: Request): Promise<Response> {
   switch (form.get('type')) {
     case 'url':
       data = form.get('data')
-      if (typeof data !== 'string' || !data.match(urlRegex({ exact: true })))
+      if (
+        typeof data !== 'string' ||
+        !data.match(urlRegex({ exact: true })) ||
+        data.length > 26214400
+      )
         return response({ message: 'Invalid url' }, 400, 'application/json')
       if (!data.match(/(https?:\/\/)/gi)) data = `https://${data}`
       metadata.size = data.length
@@ -66,7 +79,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     default:
       return response(
         { message: 'Invalid data type (must be url or file)' },
-        400,
+        415,
         'application/json',
       )
   }
@@ -78,15 +91,15 @@ export async function handleRequest(request: Request): Promise<Response> {
           length: 56,
           pool: ['\u200B', '\u200C'].join(''),
         })
-      : nanoid()
+      : nanoid(10)
+
+  if (metadata.mime?.startsWith('image'))
+    metadata.embedData = `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${RAW}/${id}"><meta name="twitter:image:src" content="${RAW}/${id}"><meta property="og:image" content="${RAW}/${id}">`
+  if (metadata.mime?.startsWith('video'))
+    metadata.embedData = `<meta name="twitter:card" content="player"><meta name="twitter:player" content="${RAW}/${id}"><meta name="twitter:player:stream" content="${RAW}/${id}"><meta name="twitter:player:stream:content_type" content="${metadata.mime}">`
 
   if (form.get('embed') === 'true' && metadata.type === 'file') {
     metadata.embedData = ''
-
-    if (metadata.mime?.startsWith('image'))
-      metadata.embedData = `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${CDN}/${id}"><meta name="twitter:image:src" content="${CDN}/${id}"><meta property="og:image" content="${CDN}/${id}">`
-    if (metadata.mime?.startsWith('video'))
-      metadata.embedData = `<meta name="twitter:card" content="player"><meta name="twitter:player" content="${CDN}/${id}"><meta name="twitter:player:stream" content="${CDN}/${id}"><meta name="twitter:player:stream:content_type" content="${metadata.mime}">`
 
     const color = form.get('color') as string | null
     if (
@@ -115,10 +128,9 @@ export async function handleRequest(request: Request): Promise<Response> {
         description,
       )}"><meta property="og:description" content="${escape(description)}">`
   }
-  metadata.deletionCode = nanoid(22)
-  metadata.timezone = request.cf?.timezone
-    ? request.cf.timezone
-    : 'America/New_York'
+  metadata.deletionCode = nanoid()
+  metadata.timezone = request.cf?.timezone || 'America/New_York'
+
   metadata.time = Date.now()
 
   let domain: string | string[] | Domain = form.has('domains')
@@ -131,13 +143,9 @@ export async function handleRequest(request: Request): Promise<Response> {
   try {
     for (const d of domain) {
       const split = d.split('<')
-      domainsParsed.push({ name: split[0], real: split[1] === 'true' })
+      domainsParsed.push({ name: split[0], real: split[1] === 'real' })
     }
-
     domain = domainsParsed[Math.floor(Math.random() * domainsParsed.length)]
-    console.log(domain.real, domain.name)
-    console.log(`id: ${id.length}.`)
-    console.log(JSON.stringify(metadata).length)
     await DATA.put(encodeURI(id), data, { metadata })
 
     return response(
@@ -145,16 +153,16 @@ export async function handleRequest(request: Request): Promise<Response> {
         url: `${form.get('show') === 'true' ? '\u200B' : ''}${
           domain.real
             ? `https://${domain.name}`
-            : `${domain.name}${SPOILER_CHARS}https://${BACKEND}`
+            : `${domain.name}${SPOILER_CHARS}${RETRIEVE_DOMAIN}`
         }/${id}`,
-        deletionURL: `https://${BACKEND}/${id}?delete=${metadata.deletionCode}`,
+        deletionURL: `${RETRIEVE_DOMAIN}/${id}?delete=${metadata.deletionCode}`,
       },
       200,
       'application/json',
     )
   } catch (e) {
     return response(
-      { message: 'Internal server error', error: e },
+      { message: 'Internal server error' },
       500,
       'application/json',
     )
@@ -164,7 +172,7 @@ export async function handleRequest(request: Request): Promise<Response> {
 function response(data: any, status: number, contentType: string): Response {
   return new Response(
     JSON.stringify({
-      success: !!status.toString().match(/(2\d?[0-9]|[0-9])/gm),
+      success: !!status.toString().match(/20[01]/gm),
       data,
     }),
     {
@@ -173,6 +181,7 @@ function response(data: any, status: number, contentType: string): Response {
         'content-type': contentType,
         'access-control-allow-origin': ORIGINS,
         'access-control-allow-methods': METHODS,
+        'access-control-allow-headers': 'content-type',
       },
     },
   )

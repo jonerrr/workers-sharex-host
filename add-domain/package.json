@@ -1,0 +1,21 @@
+{
+  "name": "add-domain",
+  "version": "1.0.0",
+  "description": "Easily add domains to ShareX host",
+  "main": "dist/worker.js",
+  "scripts": {
+    "start": "ts-node-dev src/index.ts",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Jonah",
+  "license": "MIT OR Apache-2.0",
+  "devDependencies": {
+    "@types/prompt": "^1.1.2",
+    "prettier": "^2.5.1"
+  },
+  "dependencies": {
+    "axios": "^0.26.0",
+    "prompt": "^1.2.2"
+  }
+}

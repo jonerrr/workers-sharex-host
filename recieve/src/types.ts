@@ -7,8 +7,3 @@ export interface Metadata {
   type: 'url' | 'file'
   embedData: string
 }
-
-export interface Domain {
-  name: string
-  real: boolean
-}
