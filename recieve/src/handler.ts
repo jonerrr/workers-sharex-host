@@ -1,4 +1,3 @@
-import { getExtension } from 'mime/lite'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Metadata } from './types'
@@ -62,9 +61,7 @@ export async function handleRequest(request: Request): Promise<Response> {
       element = `
         <div class="d-grid gap-3 p-3 justify-content-sm-center">
         <p class="h5 text-white">This file is not viewable, click below to download.</p>
-        <a class="btn btn-primary btn-lg" href="${RAW}/${dataCode}" role="button" download="${dataCode}.${getExtension(
-        data.metadata.mime,
-      )}">Download</a>
+        <a class="btn btn-primary btn-lg" href="${RAW}/${dataCode}" role="button">Download</a>
     </div>`
       break
   }

@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid'
 import urlRegex from 'url-regex-safe'
 import { escape } from 'lodash'
 import { Chance } from 'chance'
+import { getExtension } from 'mime/lite'
 
 declare global {
   // Vars
@@ -56,6 +57,14 @@ export async function handleRequest(request: Request): Promise<Response> {
   //@ts-ignore
   const metadata: Metadata = {}
 
+  let id =
+    form.get('url') === 'invisible'
+      ? chance.string({
+          length: 56,
+          pool: ['\u200B', '\u200C'].join(''),
+        })
+      : nanoid(10)
+
   switch (form.get('type')) {
     case 'url':
       data = form.get('data')
@@ -73,6 +82,8 @@ export async function handleRequest(request: Request): Promise<Response> {
       if (!data.type.match(/\w+\/[-+.\w]+/g) || data.size > 26214400)
         return response({ message: 'Invalid file' }, 400, 'application/json')
       metadata.mime = data.type
+      if (form.get('extension') === 'true')
+        id = `${id}.${getExtension(metadata.mime)}`
       data = await data.arrayBuffer()
       metadata.size = data.byteLength
       break
@@ -84,14 +95,6 @@ export async function handleRequest(request: Request): Promise<Response> {
       )
   }
   metadata.type = form.get('type') as 'url' | 'file'
-
-  const id =
-    form.get('url') === 'invisible'
-      ? chance.string({
-          length: 56,
-          pool: ['\u200B', '\u200C'].join(''),
-        })
-      : nanoid(10)
 
   if (metadata.mime?.startsWith('image'))
     metadata.embedData = `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${RAW}/${id}"><meta name="twitter:image:src" content="${RAW}/${id}"><meta property="og:image" content="${RAW}/${id}">`
