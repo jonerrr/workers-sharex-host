@@ -10,3 +10,6 @@
 * Fake URLs
 * URL Shortener
 * File uploader
+
+## API Docs
+https://daba.by/docs
