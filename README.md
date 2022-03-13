@@ -6,10 +6,12 @@
 
 * Custom embeds
 * invisible URLs
-* show URL on Discord
 * Fake URLs
 * URL Shortener
 * File uploader
 
 ## API Docs
 https://daba.by/docs
+
+## Frontend
+Coming soon
