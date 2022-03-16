@@ -151,9 +151,10 @@ export async function handleRequest(request: Request): Promise<Response> {
     domain = domainsParsed[Math.floor(Math.random() * domainsParsed.length)]
     await DATA.put(encodeURI(id), data, { metadata })
 
+    // ${form.get('show') === 'true' ? '\u200B' : ''}
     return response(
       {
-        url: `${form.get('show') === 'true' ? '\u200B' : ''}${
+        url: `${
           domain.real
             ? `https://${domain.name}`
             : `${domain.name}${SPOILER_CHARS}${RETRIEVE_DOMAIN}`
