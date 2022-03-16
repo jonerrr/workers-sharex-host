@@ -18,6 +18,12 @@ declare global {
 export async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const dataCode = url.pathname.substring(1)
+  if (dataCode === 'robots.txt')
+    return new Response(`User-agent: *\nDisallow: /`, {
+      status: 200,
+      headers: { 'content-type': 'text/plain' },
+    })
+
   const deletionCode = url.searchParams.get('delete')
   if (!dataCode || dataCode.length < 10)
     return response({ message: 'Invalid data code' }, 400, 'application/json')
