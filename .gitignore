@@ -1,4 +1,10 @@
-create/dist
+dist
 node_modules
 transpiled
 /.idea/
+.cache
+build
+public/build
+.env
+package-lock.json
+yarn.lock
