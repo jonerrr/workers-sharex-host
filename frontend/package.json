@@ -11,19 +11,22 @@
     "start": "cross-env NODE_ENV=production remix-serve build"
   },
   "dependencies": {
-    "@mantine/core": "^3.6.14",
+    "@mantine/core": "^4.0.5",
     "@mantine/dropzone": "^4.0.5",
     "@mantine/form": "^4.0.5",
-    "@mantine/hooks": "^3.6.14",
+    "@mantine/hooks": "^4.0.5",
     "@mantine/modals": "^4.0.5",
     "@mantine/notifications": "^4.0.5",
-    "@mantine/ssr": "^3.6.14",
+    "@mantine/ssr": "^4.0.5",
     "@remix-run/react": "1.2.3",
     "@remix-run/serve": "1.2.3",
+    "@types/url-regex-safe": "^1.0.0",
     "cross-env": "^7.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "remix": "1.2.3"
+    "remix": "1.2.3",
+    "tabler-icons-react": "^1.39.0",
+    "url-regex-safe": "^3.0.0"
   },
   "devDependencies": {
     "@remix-run/dev": "1.2.3",
