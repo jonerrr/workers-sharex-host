@@ -1,5 +1,4 @@
 import {
-  Switch,
   Text,
   Button,
   Group,
@@ -14,7 +13,15 @@ import { useModals } from '@mantine/modals'
 import { useNotifications } from '@mantine/notifications'
 import { Dropzone, DropzoneStatus } from '@mantine/dropzone'
 import { useState } from 'react'
-import { Upload, Link, FileText, FileUpload, X } from 'tabler-icons-react'
+import urlRegex from 'url-regex-safe'
+import {
+  Upload,
+  Link,
+  FileText,
+  FileUpload,
+  X,
+  Icon as TablerIcon,
+} from 'tabler-icons-react'
 
 type CreateResponse = {
   success: boolean
@@ -26,7 +33,7 @@ type CreateResponseData = {
   deletionURL?: string
 }
 
-function ImageUploadIcon({
+function FileUploadIcon({
   status,
   ...props
 }: React.ComponentProps<TablerIcon> & { status: DropzoneStatus }) {
@@ -60,7 +67,7 @@ export const dropzoneChildren = (
     spacing="xl"
     style={{ minHeight: 220, pointerEvents: 'none' }}
   >
-    <ImageUploadIcon
+    <FileUploadIcon
       status={status}
       style={{ color: getIconColor(status, theme) }}
       size={80}
@@ -77,6 +84,135 @@ export const dropzoneChildren = (
   </Group>
 )
 
+const ShortenTab = () => {
+  const clipboard = useClipboard()
+  const notifications = useNotifications()
+
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  return (
+    <Group position="apart">
+      <TextInput
+        variant="default"
+        style={{ minWidth: '60%', maxWidth: '70%' }}
+        placeholder="URL"
+        value={url}
+        onChange={(data) => setUrl(data.currentTarget.value)}
+        error={
+          !url.match(urlRegex({ exact: true })) && url !== ''
+            ? 'Invalid URL'
+            : false
+        }
+      />
+      <Button
+        loading={loading}
+        disabled={!url.match(urlRegex({ exact: true }))}
+        onClick={async () => {
+          setLoading(true)
+          const form = new FormData()
+          form.append('data', url)
+          form.append('embed', 'false')
+          form.append('url', 'normal')
+          form.append('domains', 'daba.by<real>')
+          form.append('type', 'url')
+
+          const result = await fetch('https://daba.by/create', {
+            method: 'POST',
+            body: form,
+          })
+          const resultJSON: CreateResponse = await result.json()
+
+          if (resultJSON.success || resultJSON.data.url) {
+            clipboard.copy(resultJSON.data.url)
+            notifications.showNotification({
+              title: 'Success',
+              message: 'Shortened URL copied to clipboard',
+              color: 'teal',
+            })
+          } else {
+            notifications.showNotification({
+              title: 'Error',
+              message: resultJSON.data.message,
+              color: 'red',
+            })
+          }
+          setLoading(false)
+        }}
+      >
+        Shorten
+      </Button>
+    </Group>
+  )
+}
+
+const PasteTab = () => {
+  const clipboard = useClipboard()
+  const notifications = useNotifications()
+
+  const [paste, setPaste] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  return (
+    <Group position="apart">
+      <Textarea
+        variant="default"
+        placeholder="Paste"
+        style={{ minWidth: '60%', maxWidth: '70%' }}
+        autosize
+        minRows={3}
+        maxRows={5}
+        value={paste}
+        onChange={(data) => setPaste(data.currentTarget.value)}
+      />
+      <Button
+        disabled={paste === ''}
+        loading={loading}
+        onClick={async () => {
+          setLoading(true)
+
+          const form = new FormData()
+          form.append(
+            'data',
+            new File([new Blob([paste], { type: 'text/plain' })], 'paste.txt', {
+              type: 'text/plain',
+            }),
+          )
+          form.append('embed', 'false')
+          form.append('url', 'normal')
+          form.append('domains', 'daba.by<real>')
+          form.append('type', 'file')
+
+          const result = await fetch('https://daba.by/create', {
+            method: 'POST',
+            body: form,
+          })
+          const resultJSON: CreateResponse = await result.json()
+
+          if (resultJSON.success || resultJSON.data.url) {
+            clipboard.copy(resultJSON.data.url)
+            console.log(resultJSON)
+            notifications.showNotification({
+              title: 'Success',
+              message: 'Paste created, URL copied to clipboard',
+              color: 'teal',
+            })
+          } else {
+            notifications.showNotification({
+              title: 'Error',
+              message: resultJSON.data.message,
+              color: 'red',
+            })
+          }
+          setLoading(false)
+        }}
+      >
+        Paste
+      </Button>
+    </Group>
+  )
+}
+
 export const ToolsModal = () => {
   const modals = useModals()
   const theme = useMantineTheme()
@@ -84,8 +220,6 @@ export const ToolsModal = () => {
   const clipboard = useClipboard()
 
   const [loading, setLoading] = useState(false)
-  const [url, setUrl] = useState('')
-  const [paste, setPaste] = useState('')
 
   const openToolsModal = () => {
     modals.openModal({
@@ -137,26 +271,10 @@ export const ToolsModal = () => {
               </Dropzone>
             </Tabs.Tab>
             <Tabs.Tab label="Shorten" icon={<Link size={14} />}>
-              <Group>
-                <TextInput
-                  variant="default"
-                  placeholder="URL"
-                  value={url}
-                  onChange={(data) => setUrl(data.currentTarget.value)}
-                />
-                <Button>Shorten</Button>
-              </Group>
+              <ShortenTab />
             </Tabs.Tab>
             <Tabs.Tab label="Paste" icon={<FileText size={14} />}>
-            <Group>
-                <TextInput
-                  variant="default"
-                  placeholder="Paste"
-                  value={paste}
-                  onChange={(data) => setPaste(data.currentTarget.value)}
-                />
-                <Button>Shorten</Button>
-              </Group>
+              <PasteTab />
             </Tabs.Tab>
           </Tabs>
         </>
@@ -169,6 +287,7 @@ export const ToolsModal = () => {
       variant="light"
       color="teal"
       fullWidth
+      size="lg"
       onClick={openToolsModal}
       style={{ marginTop: 14 }}
     >

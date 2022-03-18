@@ -14,7 +14,7 @@ import {
   Textarea,
 } from '@mantine/core'
 import { ExternalLink } from 'tabler-icons-react'
-import { ToolsModal } from '../components/tools'
+import { ToolsModal } from '~/components/tools'
 import { useState } from 'react'
 
 type DomainInfo = {
@@ -141,6 +141,7 @@ export default function Index() {
               value={config.description}
               style={{ width: '25%' }}
               autosize
+              minRows={2}
               maxRows={4}
               onChange={(data) =>
                 updateConfig({
@@ -156,6 +157,7 @@ export default function Index() {
           variant="light"
           color="blue"
           fullWidth
+          size="lg"
           disabled={!config.domains.length}
           style={{ marginTop: 14 }}
         >
@@ -166,6 +168,7 @@ export default function Index() {
           variant="light"
           color="orange"
           fullWidth
+          size="lg"
           component="a"
           target="_blank"
           leftIcon={<ExternalLink size={14} />}

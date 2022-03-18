@@ -1,6 +1,8 @@
 # Cloudflare Workers ShareX Host
 
-## This is a work in progress
+## Disclaimer
+
+**This is a work in progress, bugs are to be expected.**
 
 ## Features
 
@@ -11,7 +13,9 @@
 * File uploader
 
 ## API Docs
+
 https://daba.by/docs
 
 ## Frontend
+
 Coming soon
