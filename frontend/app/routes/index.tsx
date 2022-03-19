@@ -37,7 +37,41 @@ export default function Index() {
     description: '',
   })
 
-  console.log(config)
+  const shareX: any = {
+    Version: '13.1.0',
+    Name: 'host - files/images',
+    DestinationType: 'ImageUploader, FileUploader',
+    RequestMethod: 'POST',
+    RequestURL: 'https://daba.by/create',
+    Body: 'MultipartFormData',
+    Arguments: {},
+    FileFormName: 'data',
+    URL: '$json:data:url$',
+    DeletionURL: '$json:deletionURL',
+    ErrorMessage: '$json:data:message',
+  }
+  let parsedDomains = ''
+  config.domains.forEach(
+    (d) =>
+      (parsedDomains = `${parsedDomains}${d.name}<${
+        d.real ? 'real' : 'fake'
+      }>`),
+  )
+  shareX.Arguments.domains = parsedDomains
+  shareX.Arguments.url = config.url
+  shareX.Arguments.extension = config.extension
+  shareX.Arguments.embed = config.embed
+  if (config.embed) {
+    if (config.color && config.color !== '')
+      shareX.Arguments.color = config.color
+    if (config.title && config.title !== '')
+      shareX.Arguments.title = config.title
+    if (config.description && config.description !== '')
+      shareX.Arguments.description = config.description
+  }
+  const shareXconfig = `data:text/json;charset=utf-8,${encodeURIComponent(
+    JSON.stringify(shareX),
+  )}`
 
   return (
     <div
@@ -59,7 +93,8 @@ export default function Index() {
           <Text>Domains</Text>
           <MultiSelect
             style={{ minWidth: '25%', maxWidth: '50%' }}
-            data={config.domains.map((d) => d.name)}
+            // data={config.domains.map((d) => d.name)}
+            data={domainArray}
             value={config.domains.map((d) => d.name)}
             placeholder="Select Domains"
             searchable
@@ -158,7 +193,10 @@ export default function Index() {
           color="blue"
           fullWidth
           size="lg"
-          disabled={!config.domains.length}
+          component="a"
+          href={shareXconfig}
+          download="config.sxcu"
+          disabled={config.domains.length === 0}
           style={{ marginTop: 14 }}
         >
           Download

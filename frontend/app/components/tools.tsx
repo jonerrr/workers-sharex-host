@@ -189,8 +189,11 @@ const PasteTab = () => {
           })
           const resultJSON: CreateResponse = await result.json()
 
-          if (resultJSON.success || resultJSON.data.url) {
+          if (resultJSON.success && resultJSON.data.url) {
             clipboard.copy(resultJSON.data.url)
+            console.log(clipboard.copied)
+            console.log(clipboard.error)
+
             console.log(resultJSON)
             notifications.showNotification({
               title: 'Success',
@@ -226,7 +229,7 @@ export const ToolsModal = () => {
       title: 'Tools',
       children: (
         <>
-          <Tabs tabPadding="sm">
+          <Tabs tabPadding="sm" grow position="center">
             <Tabs.Tab label="Upload" icon={<Upload size={14} />}>
               <Dropzone
                 onDrop={async (files) => {
@@ -247,7 +250,6 @@ export const ToolsModal = () => {
 
                   if (resultJSON.success || resultJSON.data.url) {
                     clipboard.copy(resultJSON.data.url)
-                    console.log(clipboard.copied)
                     notifications.showNotification({
                       title: 'Success',
                       message: 'File uploaded, URL copied to clipboard',
