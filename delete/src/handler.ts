@@ -55,7 +55,7 @@ export async function handleRequest(request: Request): Promise<Response> {
   return response({ message: 'Data deleted' }, 200, 'application/json')
 }
 
-function response(data: any, status: number, contentType: string): Response {
+function response(data: unknown, status: number, contentType: string): Response {
   return new Response(
     JSON.stringify({
       success: !!status.toString().match(/20[01]/gm),

@@ -91,7 +91,11 @@ export async function handleRequest(request: Request): Promise<Response> {
   )
 }
 
-function response(data: any, status: number, contentType: string): Response {
+function response(
+  data: unknown,
+  status: number,
+  contentType: string,
+): Response {
   return new Response(
     JSON.stringify({
       success: !!status.toString().match(/20[01]/gm),

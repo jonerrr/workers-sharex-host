@@ -54,7 +54,6 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   let data: File | string | ArrayBuffer | null
 
-  //@ts-ignore
   const metadata: Metadata = {}
 
   let id =
@@ -78,12 +77,20 @@ export async function handleRequest(request: Request): Promise<Response> {
       metadata.size = data.length
       break
     case 'file':
-      data = form.get('data') as File
-      if (!data.type.match(/\w+\/[-+.\w]+/g) || data.size > 26214400)
+      data = form.get('data')
+      if (
+        !data ||
+        typeof data !== 'object' ||
+        !data.type.match(/\w+\/[-+.\w]+/g) ||
+        data.size > 26214400
+      )
         return response({ message: 'Invalid file' }, 400, 'application/json')
       metadata.mime = data.type
-      if (form.get('extension') === 'true')
-        id = `${id}.${getExtension(metadata.mime)}`
+      if (form.get('extension') === 'true') {
+        const extension = data.name.split('.').pop()
+        console.log(extension)
+        id = `${id}.${extension ? extension : getExtension(data.type)}`
+      }
       data = await data.arrayBuffer()
       metadata.size = data.byteLength
       break
@@ -108,7 +115,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     if (
       color &&
       color.match(
-        /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^\)]*\)/gi,
+        /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/gi,
       )
     )
       metadata.embedData = `${
@@ -173,7 +180,11 @@ export async function handleRequest(request: Request): Promise<Response> {
   }
 }
 
-function response(data: any, status: number, contentType: string): Response {
+function response(
+  data: unknown,
+  status: number,
+  contentType: string,
+): Response {
   return new Response(
     JSON.stringify({
       success: !!status.toString().match(/20[01]/gm),
