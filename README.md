@@ -1,8 +1,6 @@
 # Cloudflare Workers ShareX Host
 
-## Disclaimer
-
-**This is a work in progress, bugs are to be expected.**
+**This is a work in progress, bugs and API changes are expected. Don't use this in production for anything.**
 
 ## Features
 
@@ -11,11 +9,7 @@
 * Fake URLs
 * URL Shortener
 * File uploader
+* File/URL transfer (coming soon)
 
-## API Docs
-
-https://daba.by/docs
-
-## Frontend
-
-Coming soon
+## Installation
+There are currently no installation instructions (there will probably never be installation instructions). GitHub issues asking for installation support will be closed.

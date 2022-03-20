@@ -4,13 +4,13 @@ import { Metadata } from './types'
 import { genHTML } from './html'
 
 dayjs.extend(relativeTime)
+//TODO fix undefined that shows up on pastes/downloads for some reason
 
 declare global {
   // Vars
-  const ORIGINS: string
-  const METHODS: string
   const RAW: string
   const DELETION_API: string
+  const HOME: string
   // Namespaces
   const DATA: KVNamespace
 }
@@ -18,6 +18,11 @@ declare global {
 export async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const dataCode = url.pathname.substring(1)
+
+  if(dataCode.length === 0)
+    return Response.redirect(HOME, 308)
+
+
   if (dataCode === 'robots.txt')
     return new Response(`User-agent: *\nDisallow: /`, {
       status: 200,

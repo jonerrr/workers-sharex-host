@@ -6,8 +6,7 @@
   "scripts": {
     "build": "webpack",
     "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
-    "lint": "eslint --max-warnings=0 src && prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
-    "test": "jest --config jestconfig.json --verbose"
+    "lint": "eslint --max-warnings=0 src && prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'"
   },
   "author": "Jonah",
   "license": "MIT OR Apache-2.0",
@@ -20,7 +19,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.0.0",
-    "@types/jest": "^26.0.23",
     "@types/mime-types": "^2.1.1",
     "@types/service-worker-mock": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
@@ -38,6 +36,7 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
+    "@types/jest": "^27.4.1",
     "mime-types": "^2.1.34"
   },
   "keywords": []

@@ -1,8 +1,8 @@
 import * as React from 'react'
+import { Helmet } from "react-helmet"
+
 import {
   MantineProvider,
-  ColorSchemeProvider,
-  ColorScheme,
   GlobalStyles,
   NormalizeCSS,
 } from '@mantine/core'
@@ -17,6 +17,14 @@ export function Layout({ children }: LayoutProps) {
     <MantineProvider theme={{ colorScheme: 'dark' }}>
       <GlobalStyles />
       <NormalizeCSS />
+      <Helmet>
+        <title>Host</title>
+        <meta name="theme-color" content="#85144b" />
+        <meta name="twitter:title" content="Host" />
+        <meta property="og:title" content="Host" />
+        <meta name="twitter:description" content="The fastest and easiest way to host your files and shortened URLs. Open source with no signup, no ads, no tracking." />
+        <meta property="og:description" content="The fastest and easiest way to host your files and shortened URLs. Open source with no signup, no ads, no tracking." />
+      </Helmet>
       <NotificationsProvider>{children}</NotificationsProvider>
     </MantineProvider>
   )

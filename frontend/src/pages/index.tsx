@@ -33,7 +33,7 @@ export type DomainInfo = {
   real: boolean
 }
 
-const domainArray = ['daba.by']
+const domainArray = ['daba.by', 'i.jnr.cx']
 const shareX: any = {
   Version: '13.1.0',
   Name: 'host - files/images',
@@ -78,7 +78,7 @@ export default function Index() {
   const theme = useMantineTheme()
 
   const [config, updateConfig] = React.useState<Config>({
-    domains: [{ name: 'daba.by', real: true }],
+    domains: [{ name: 'i.jnr.cx', real: true }],
     url: 'normal',
     extension: false,
     embed: false,
@@ -229,7 +229,7 @@ export default function Index() {
             target="_blank"
             leftIcon={<ExternalLink size={14} />}
             rel="noopener noreferrer"
-            href="https://daba.by/docs"
+            href="https://api.jnr.cx/docs"
             style={{ marginTop: 14 }}
           >
             Docs

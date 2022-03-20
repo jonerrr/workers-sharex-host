@@ -166,6 +166,7 @@ export async function handleRequest(request: Request): Promise<Response> {
             ? `https://${domain.name}`
             : `${domain.name}${SPOILER_CHARS}${RETRIEVE_DOMAIN}`
         }/${id}`,
+        raw: `${RAW}/${id}`,
         deletionURL: `${RETRIEVE_DOMAIN}/${id}?delete=${metadata.deletionCode}`,
       },
       200,

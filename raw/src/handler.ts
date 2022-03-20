@@ -4,6 +4,7 @@ declare global {
   // Vars
   const ORIGINS: string
   const METHODS: string
+  const HOME: string
   // Namespaces
   const DATA: KVNamespace
 }
@@ -22,7 +23,9 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   const url = new URL(request.url)
   const key = url.pathname.split('/').pop()
-  console.log(key)
+  if(!key || key.length === 0)
+    return Response.redirect(HOME, 308)
+
   if (!key || key.length < 10)
     return response({ message: 'Invalid file code' }, 400, 'application/json')
 

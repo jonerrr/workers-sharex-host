@@ -54,7 +54,7 @@ const CreateData = async (
       form.append('description', config.description)
   }
 
-  const result = await fetch('https://daba.by/create', {
+  const result = await fetch('https://api.jnr.cx/create', {
     method: 'POST',
     body: form,
   })
