@@ -59,6 +59,7 @@ const generateConfig = (config: Config) => {
 
   shareX.Arguments.domains = parsedDomains
   shareX.Arguments.url = config.url
+  shareX.Arguments.type = 'file'
   shareX.Arguments.extension = config.extension
   shareX.Arguments.embed = config.embed
   if (config.embed) {
