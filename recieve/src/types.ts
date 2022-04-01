@@ -6,4 +6,5 @@ export interface Metadata {
   time: number
   type: 'url' | 'file'
   embedData: string
+  expire?: number
 }

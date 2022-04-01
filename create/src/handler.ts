@@ -56,6 +56,20 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   const metadata: Metadata = {}
 
+  const ttl = form.get('ttl')
+  if (ttl && typeof ttl === 'string') {
+    const time = parseInt(ttl)
+    if (time < 60)
+      return response(
+        {
+          message: `Invalid TTL (make sure it's greater than 60 seconds)`,
+        },
+        403,
+        'application/json',
+      )
+    metadata.expire = time
+  }
+
   let id =
     form.get('url') === 'invisible'
       ? chance.string({
@@ -86,11 +100,13 @@ export async function handleRequest(request: Request): Promise<Response> {
       )
         return response({ message: 'Invalid file' }, 400, 'application/json')
       metadata.mime = data.type
-      if (form.get('extension') === 'true') {
-        const extension = data.name.split('.').pop()
-        console.log(extension)
-        id = `${id}.${extension ? extension : getExtension(data.type)}`
-      }
+      metadata.extension = data.name.split('.').pop()
+
+      if (form.get('extension') === 'true')
+        id = `${id}.${
+          metadata.extension ? metadata.extension : getExtension(data.type)
+        }`
+
       data = await data.arrayBuffer()
       metadata.size = data.byteLength
       break
@@ -109,18 +125,21 @@ export async function handleRequest(request: Request): Promise<Response> {
     metadata.embedData = `<meta name="twitter:card" content="player"><meta name="twitter:player" content="${RAW}/${id}"><meta name="twitter:player:stream" content="${RAW}/${id}"><meta name="twitter:player:stream:content_type" content="${metadata.mime}">`
 
   if (form.get('embed') === 'true' && metadata.type === 'file') {
-    metadata.embedData = ''
-
     const color = form.get('color') as string | null
-    if (
-      color &&
-      color.match(
-        /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/gi,
+    if (color) {
+      if (color === 'random')
+        metadata.embedData += `<meta name="theme-color" content="${chance.color(
+          { format: 'hex' },
+        )}">`
+      if (
+        color.match(
+          /(?:#|0x)(?:[a-f0-9]{3}|[a-f0-9]{6})\b|(?:rgb|hsl)a?\([^)]*\)/gi,
+        )
       )
-    )
-      metadata.embedData = `${
-        metadata.embedData
-      }<meta name="theme-color" content="${escape(color)}">`
+        metadata.embedData = `${
+          metadata.embedData
+        }<meta name="theme-color" content="${escape(color)}">`
+    }
 
     const title = form.get('title')
     if (title && typeof title === 'string')
@@ -149,16 +168,18 @@ export async function handleRequest(request: Request): Promise<Response> {
   domain = domain.replace(/\s+/g, '').split('>')
   domain.pop()
   const domainsParsed: Domain[] = []
-
   try {
     for (const d of domain) {
       const split = d.split('<')
       domainsParsed.push({ name: split[0], real: split[1] === 'real' })
     }
     domain = domainsParsed[Math.floor(Math.random() * domainsParsed.length)]
-    await DATA.put(encodeURI(id), data, { metadata })
 
-    // ${form.get('show') === 'true' ? '\u200B' : ''}
+    await DATA.put(encodeURI(id), data, {
+      metadata,
+      expirationTtl: metadata.expire,
+    })
+
     return response(
       {
         url: `${
@@ -173,6 +194,7 @@ export async function handleRequest(request: Request): Promise<Response> {
       'application/json',
     )
   } catch (e) {
+    console.log(e)
     return response(
       { message: 'Internal server error' },
       500,

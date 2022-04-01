@@ -6,6 +6,7 @@ export const genHTML = (
   size: number,
   deletionCode: string | null,
   embed?: string,
+  expire?: number,
 ): string => `
 <!doctype html>
 <html lang="en">
@@ -13,16 +14,22 @@ export const genHTML = (
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     ${embed}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <title>${dataCode}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <style>
+        body {
+            background-color: #1A1B1E;
+        }
         #textData {
             word-wrap: break-word;
         }
     </style>
 </head>
-<body class="bg-dark">
+<body>
+${
+  deletionCode
+    ? `
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModal" aria-hidden="true">
     <div class="modal-dialog text-white modal-dialog-centered">
         <div class="modal-content bg-dark">
@@ -38,7 +45,9 @@ export const genHTML = (
             </div>
         </div>
     </div>
-</div>
+</div>`
+    : ``
+}
 <div class="px-4 py-5 my-5 text-center">
   ${element}
     <p class="h6 text-white">Uploaded: ${date}</p>
@@ -77,10 +86,6 @@ export const genHTML = (
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous">
-</script>
 <script>
 ${
   deletionCode
@@ -107,6 +112,7 @@ ${
         }).catch(async (e) => {
             console.log(e)
             await toastError.show()
+            return
         })
             deleteButton.className += " disabled"
             await modal.hide()
@@ -116,5 +122,6 @@ ${
 }
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </body>
 </html>`

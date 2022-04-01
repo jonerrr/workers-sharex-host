@@ -19,9 +19,7 @@ export async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const dataCode = url.pathname.substring(1)
 
-  if(dataCode.length === 0)
-    return Response.redirect(HOME, 308)
-
+  if (dataCode.length === 0) return Response.redirect(HOME, 308)
 
   if (dataCode === 'robots.txt')
     return new Response(`User-agent: *\nDisallow: /`, {
@@ -42,7 +40,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     return Response.redirect(new TextDecoder().decode(data.value), 308)
 
   const type = data.metadata.mime?.split('/')[0]
-
+  console.log(data.metadata.embedData)
   let element: string
   switch (type) {
     case 'audio':
@@ -72,7 +70,7 @@ export async function handleRequest(request: Request): Promise<Response> {
       element = `
         <div class="d-grid gap-3 p-3 justify-content-sm-center">
         <p class="h5 text-white">This file is not viewable, click below to download.</p>
-        <a class="btn btn-primary btn-lg" href="${RAW}/${dataCode}" role="button">Download</a>
+        <a class="btn btn-primary btn-lg" href="${RAW}/${dataCode}" role="button" download>Download</a>
     </div>`
       break
   }
