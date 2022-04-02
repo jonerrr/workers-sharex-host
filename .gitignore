@@ -4,7 +4,7 @@ transpiled
 /.idea/
 .cache
 build
-public/build
+public
 .env
 package-lock.json
 yarn.lock
