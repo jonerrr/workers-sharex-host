@@ -4,12 +4,13 @@
 
 ## Features
 
-* Custom embeds
-* invisible URLs
-* Fake URLs
-* URL Shortener
-* File uploader
-* File/URL transfer (coming soon)
+- Custom embeds
+- invisible URLs
+- Fake URLs
+- URL Shortener
+- File uploader
+- File/URL transfer by IP
 
 ## Installation
+
 There are currently no installation instructions (there will probably never be installation instructions). GitHub issues asking for installation support will be closed.

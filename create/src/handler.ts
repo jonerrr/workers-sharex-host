@@ -162,6 +162,17 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   metadata.time = Date.now()
 
+  const url = new URL(request.url)
+  const transport = url.searchParams.get('transport')
+  if (transport === 'true') {
+    await DATA.put(request.headers.get('CF-Connecting-IP') as string, data, {
+      metadata,
+      // 24 hours
+      expirationTtl: 86400,
+    })
+    return response({ url: `${RETRIEVE_DOMAIN}/t` }, 200, 'application/json')
+  }
+
   let domain: string | string[] | Domain = form.has('domains')
     ? (form.get('domains') as string)
     : DEFAULT_DOMAIN

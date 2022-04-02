@@ -46,6 +46,7 @@ const CreateData = async (
   form.append('url', config.url)
   form.append('type', type)
   form.append('data', data)
+  form.append('ttl', config.ttl ? config.ttl.toString() : '')
   form.append('extension', config.extension ? 'true' : 'false')
   if (config.embed) {
     if (config.color && config.color !== '') form.append('color', config.color)

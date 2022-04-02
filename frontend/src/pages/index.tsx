@@ -12,9 +12,11 @@ import {
   Collapse,
   ColorInput,
   TextInput,
+  Checkbox,
   Textarea,
+  NumberInput,
 } from '@mantine/core'
-import { ExternalLink } from 'tabler-icons-react'
+import { Check, ExternalLink } from 'tabler-icons-react'
 import { Modal } from '../components/modal'
 import { Layout } from '../components/layout'
 
@@ -22,6 +24,7 @@ export type Config = {
   domains: DomainInfo[]
   url: string
   extension: boolean
+  ttl?: number
   embed: boolean
   color: string
   title: string
@@ -39,7 +42,7 @@ const shareX: any = {
   Name: 'host - files/images',
   DestinationType: 'ImageUploader, FileUploader',
   RequestMethod: 'POST',
-  RequestURL: 'https://daba.by/create',
+  RequestURL: 'https://api.jnr.cx/create',
   Body: 'MultipartFormData',
   Arguments: {},
   FileFormName: 'data',
@@ -62,6 +65,7 @@ const generateConfig = (config: Config) => {
   shareX.Arguments.type = 'file'
   shareX.Arguments.extension = config.extension
   shareX.Arguments.embed = config.embed
+  shareX.Arguments.ttl = config.ttl
   if (config.embed) {
     if (config.color && config.color !== '')
       shareX.Arguments.color = config.color
@@ -82,6 +86,7 @@ export default function Index() {
     domains: [{ name: 'i.jnr.cx', real: true }],
     url: 'normal',
     extension: false,
+    ttl: undefined,
     embed: false,
     color: '',
     title: '',
@@ -157,6 +162,21 @@ export default function Index() {
           </Group>
 
           <Group position="apart" style={{ marginBottom: 14 }}>
+            <Text>Time to live</Text>
+            <NumberInput
+              placeholder="120 seconds"
+              min={60}
+              value={config.ttl}
+              onChange={(val) =>
+                updateConfig({
+                  ...config,
+                  ttl: val,
+                })
+              }
+            />
+          </Group>
+
+          <Group position="apart" style={{ marginBottom: 14 }}>
             <Text>Embed</Text>
             <Switch
               onLabel="ON"
@@ -175,6 +195,19 @@ export default function Index() {
                 placeholder="Pick color"
                 value={config.color}
                 onChange={(data) => updateConfig({ ...config, color: data })}
+              />
+            </Group>
+            <Group position="apart" style={{ marginBottom: 14 }}>
+              <Text>Random Color</Text>
+              <Checkbox
+                size="lg"
+                checked={config.color === 'random'}
+                onChange={(data) =>
+                  updateConfig({
+                    ...config,
+                    color: config.color === 'random' ? '' : 'random',
+                  })
+                }
               />
             </Group>
             <Group position="apart" style={{ marginBottom: 14 }}>

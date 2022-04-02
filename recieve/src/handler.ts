@@ -28,11 +28,16 @@ export async function handleRequest(request: Request): Promise<Response> {
     })
 
   const deletionCode = url.searchParams.get('delete')
-  if (!dataCode || dataCode.length < 10)
+  if (!dataCode || (dataCode.length < 10 && dataCode !== 't'))
     return response({ message: 'Invalid data code' }, 400, 'application/json')
 
   const data: KVNamespaceGetWithMetadataResult<ArrayBuffer, Metadata> =
-    await DATA.getWithMetadata(dataCode, 'arrayBuffer')
+    await DATA.getWithMetadata(
+      dataCode === 't'
+        ? (request.headers.get('CF-Connecting-IP') as string)
+        : dataCode,
+      'arrayBuffer',
+    )
   if (!data.value || !data.metadata)
     return response({ message: 'Data not found' }, 404, 'application/json')
 
