@@ -15,6 +15,7 @@ import { dropzoneChildren } from './dropzone'
 import urlRegex from 'url-regex-safe'
 import { Upload, Link, FileText } from 'tabler-icons-react'
 import { Config } from '../pages'
+import copy from 'copy-to-clipboard-ultralight'
 
 type CreateResponse = {
   success: boolean
@@ -68,7 +69,7 @@ type ModalProps = {
 
 export const Modal = ({ config }: ModalProps) => {
   const notifications = useNotifications()
-  const clipboard = useClipboard()
+  // const clipboard = useClipboard()
 
   const [opened, setOpened] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
@@ -81,7 +82,8 @@ export const Modal = ({ config }: ModalProps) => {
       message,
       color: 'teal',
     })
-    clipboard.copy(url)
+    // clipboard.copy(url)
+    copy(url)
   }
   const error = (message: string) =>
     notifications.showNotification({
