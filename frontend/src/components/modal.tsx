@@ -18,6 +18,7 @@ import { dropzoneChildren } from './dropzone'
 import urlRegex from 'url-regex-safe'
 import { Upload, Link, FileText, Copy, Check } from 'tabler-icons-react'
 import { Config } from '../pages'
+import copy from 'copy-to-clipboard-ultralight'
 
 type CreateResponse = {
   success: boolean
@@ -128,7 +129,6 @@ export const Modal = ({ config }: ModalProps) => {
       color: 'teal',
     })
     clipboard.copy(url)
-    console.log(clipboard.copied)
     setDataUrl({ ...dataUrl, [type]: url })
   }
   const error = (message: string) =>
