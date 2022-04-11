@@ -7,13 +7,16 @@ import {
   Group,
   Textarea,
   Center,
+  Collapse,
+  ActionIcon,
+  Tooltip,
 } from '@mantine/core'
 import { useClipboard, getHotkeyHandler } from '@mantine/hooks'
 import { useNotifications } from '@mantine/notifications'
 import { Dropzone } from '@mantine/dropzone'
 import { dropzoneChildren } from './dropzone'
 import urlRegex from 'url-regex-safe'
-import { Upload, Link, FileText } from 'tabler-icons-react'
+import { Upload, Link, FileText, Copy, Check } from 'tabler-icons-react'
 import { Config } from '../pages'
 
 type CreateResponse = {
@@ -66,22 +69,67 @@ type ModalProps = {
   config: Config
 }
 
+type InputProps = {
+  url: string
+  clipboard: ClipboardInput
+}
+
+type ClipboardInput = {
+  copy: (valueToCopy: any) => void
+  reset: () => void
+  error: Error
+  copied: boolean
+}
+
+const CopyInput = ({ url, clipboard }: InputProps) => {
+  return (
+    <Collapse in={url !== ''}>
+      <Group pb={10}>
+        <TextInput style={{ width: '90%' }} disabled value={url} />
+        <Tooltip
+          position="left"
+          placement="center"
+          label={clipboard.copied ? 'Copied' : 'Copy'}
+          withArrow
+          color={clipboard.copied ? 'teal' : 'gray'}
+          gutter={10}
+        >
+          <ActionIcon
+            variant="outline"
+            disabled={clipboard.copied}
+            onClick={() => clipboard.copy(url)}
+          >
+            {clipboard.copied ? <Check size={16} /> : <Copy size={16} />}
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+    </Collapse>
+  )
+}
+
 export const Modal = ({ config }: ModalProps) => {
   const notifications = useNotifications()
-  const clipboard = useClipboard()
+  const clipboard = useClipboard({ timeout: 500 })
 
   const [opened, setOpened] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [url, setUrl] = React.useState('')
   const [paste, setPaste] = React.useState('')
+  const [dataUrl, setDataUrl] = React.useState({ paste: '', url: '', file: '' })
 
-  const success = (message: string, url: string) => {
+  const success = async (
+    message: string,
+    url: string,
+    type: 'file' | 'paste' | 'url',
+  ) => {
     notifications.showNotification({
       title: 'Success',
       message,
       color: 'teal',
     })
     clipboard.copy(url)
+    console.log(clipboard.copied)
+    setDataUrl({ ...dataUrl, [type]: url })
   }
   const error = (message: string) =>
     notifications.showNotification({
@@ -101,6 +149,7 @@ export const Modal = ({ config }: ModalProps) => {
       >
         <Tabs tabPadding="sm" grow position="center">
           <Tabs.Tab label="Upload" icon={<Upload size={14} />}>
+            <CopyInput clipboard={clipboard} url={dataUrl.file} />
             <Dropzone
               onDrop={async (files) => {
                 setLoading(true)
@@ -109,6 +158,7 @@ export const Modal = ({ config }: ModalProps) => {
                   ? success(
                       'File uploaded, URL copied to clipboard',
                       json.data.url as string,
+                      'file',
                     )
                   : error(json.data.message as string)
                 setLoading(false)
@@ -121,6 +171,7 @@ export const Modal = ({ config }: ModalProps) => {
             </Dropzone>
           </Tabs.Tab>
           <Tabs.Tab label="Paste" icon={<FileText size={14} />}>
+            <CopyInput clipboard={clipboard} url={dataUrl.paste} />
             <Textarea
               variant="default"
               placeholder="Paste"
@@ -128,7 +179,9 @@ export const Modal = ({ config }: ModalProps) => {
               minRows={2}
               maxRows={10}
               value={paste}
-              onChange={(data) => setPaste(data.currentTarget.value)}
+              onChange={(data: {
+                currentTarget: { value: React.SetStateAction<string> }
+              }) => setPaste(data.currentTarget.value)}
             />
             <Center>
               <Button
@@ -154,6 +207,7 @@ export const Modal = ({ config }: ModalProps) => {
                     ? success(
                         'Paste created, URL copied to clipboard',
                         json.data.url as string,
+                        'paste',
                       )
                     : error(json.data.message as string)
                   setLoading(false)
@@ -164,6 +218,7 @@ export const Modal = ({ config }: ModalProps) => {
             </Center>
           </Tabs.Tab>
           <Tabs.Tab label="Shorten" icon={<Link size={14} />}>
+            <CopyInput clipboard={clipboard} url={dataUrl.url} />
             <Group position="apart">
               <TextInput
                 variant="default"
@@ -182,13 +237,16 @@ export const Modal = ({ config }: ModalProps) => {
                         ? success(
                             'Shortened URL copied to clipboard',
                             json.data.url as string,
+                            'url',
                           )
                         : error(json.data.message as string)
                       setLoading(false)
                     },
                   ],
                 ])}
-                onChange={(data) => setUrl(data.currentTarget.value)}
+                onChange={(data: {
+                  currentTarget: { value: React.SetStateAction<string> }
+                }) => setUrl(data.currentTarget.value)}
                 error={
                   !url.match(urlRegex({ exact: true })) && url !== ''
                     ? 'Invalid URL'
@@ -205,6 +263,7 @@ export const Modal = ({ config }: ModalProps) => {
                     ? success(
                         'Shortened URL copied to clipboard',
                         json.data.url as string,
+                        'url',
                       )
                     : error(json.data.message as string)
                   setLoading(false)

@@ -120,8 +120,8 @@ export default function Index() {
               placeholder="Select Domains"
               searchable
               creatable
-              getCreateLabel={(query) => `+ create ${query}`}
-              onChange={(data) => {
+              getCreateLabel={(query: any) => `+ create ${query}`}
+              onChange={(data: any) => {
                 const domains: DomainInfo[] = []
                 for (const d of data)
                   domains.push({ name: d, real: domainArray.includes(d) })
@@ -134,7 +134,7 @@ export default function Index() {
             <Text>URL</Text>
             <SegmentedControl
               value={config.url}
-              onChange={(data) => {
+              onChange={(data: string) => {
                 const newConfig = { ...config, url: data }
                 if (data === 'invisible' && config.extension)
                   newConfig.extension = false
@@ -152,7 +152,7 @@ export default function Index() {
               size="lg"
               disabled={config.url === 'invisible'}
               checked={config.extension}
-              onChange={(data) =>
+              onChange={(data: { currentTarget: { checked: any } }) =>
                 updateConfig({
                   ...config,
                   extension: data.currentTarget.checked,
@@ -167,7 +167,7 @@ export default function Index() {
               placeholder="120 seconds"
               min={60}
               value={config.ttl}
-              onChange={(val) =>
+              onChange={(val: any) =>
                 updateConfig({
                   ...config,
                   ttl: val,
@@ -183,7 +183,7 @@ export default function Index() {
               offLabel="OFF"
               size="lg"
               checked={config.embed}
-              onChange={(data) =>
+              onChange={(data: { currentTarget: { checked: any } }) =>
                 updateConfig({ ...config, embed: data.currentTarget.checked })
               }
             />
@@ -194,7 +194,7 @@ export default function Index() {
               <ColorInput
                 placeholder="Pick color"
                 value={config.color}
-                onChange={(data) => updateConfig({ ...config, color: data })}
+                onChange={(data: any) => updateConfig({ ...config, color: data })}
               />
             </Group>
             <Group position="apart" style={{ marginBottom: 14 }}>
@@ -202,7 +202,7 @@ export default function Index() {
               <Checkbox
                 size="lg"
                 checked={config.color === 'random'}
-                onChange={(data) =>
+                onChange={(data: any) =>
                   updateConfig({
                     ...config,
                     color: config.color === 'random' ? '' : 'random',
@@ -216,7 +216,7 @@ export default function Index() {
                 placeholder="Title"
                 value={config.title}
                 style={{ width: '25%' }}
-                onChange={(data) =>
+                onChange={(data: { currentTarget: { value: any } }) =>
                   updateConfig({ ...config, title: data.currentTarget.value })
                 }
               />
@@ -230,7 +230,7 @@ export default function Index() {
                 autosize
                 minRows={2}
                 maxRows={4}
-                onChange={(data) =>
+                onChange={(data: { currentTarget: { value: any } }) =>
                   updateConfig({
                     ...config,
                     description: data.currentTarget.value,
