@@ -8,17 +8,16 @@ import {
   Textarea,
   Center,
   Collapse,
-  ActionIcon,
   Tooltip,
+  Code,
 } from '@mantine/core'
 import { useClipboard, getHotkeyHandler } from '@mantine/hooks'
 import { useNotifications } from '@mantine/notifications'
 import { Dropzone } from '@mantine/dropzone'
 import { dropzoneChildren } from './dropzone'
 import urlRegex from 'url-regex-safe'
-import { Upload, Link, FileText, Copy, Check } from 'tabler-icons-react'
+import { Upload, Link, FileText } from 'tabler-icons-react'
 import { Config } from '../pages'
-import copy from 'copy-to-clipboard-ultralight'
 
 type CreateResponse = {
   success: boolean
@@ -59,10 +58,13 @@ const CreateData = async (
       form.append('description', config.description)
   }
 
-  const result = await fetch('https://api.jnr.cx/create', {
-    method: 'POST',
-    body: form,
-  })
+  const result = await fetch(
+    `https://api.jnr.cx/create?transport=${config.transport}`,
+    {
+      method: 'POST',
+      body: form,
+    },
+  )
   return await result.json()
 }
 
@@ -85,8 +87,7 @@ type ClipboardInput = {
 const CopyInput = ({ url, clipboard }: InputProps) => {
   return (
     <Collapse in={url !== ''}>
-      <Group pb={10}>
-        <TextInput style={{ width: '90%' }} disabled value={url} />
+      <Center pb={13}>
         <Tooltip
           position="left"
           placement="center"
@@ -95,15 +96,19 @@ const CopyInput = ({ url, clipboard }: InputProps) => {
           color={clipboard.copied ? 'teal' : 'gray'}
           gutter={10}
         >
-          <ActionIcon
-            variant="outline"
-            disabled={clipboard.copied}
+          <Code
+            sx={{
+              '&:hover': {
+                color: '#FFFFFF',
+                cursor: 'pointer',
+              },
+            }}
             onClick={() => clipboard.copy(url)}
           >
-            {clipboard.copied ? <Check size={16} /> : <Copy size={16} />}
-          </ActionIcon>
+            {url}
+          </Code>
         </Tooltip>
-      </Group>
+      </Center>
     </Collapse>
   )
 }

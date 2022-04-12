@@ -16,7 +16,7 @@ import {
   Textarea,
   NumberInput,
 } from '@mantine/core'
-import { Check, ExternalLink } from 'tabler-icons-react'
+import { ExternalLink } from 'tabler-icons-react'
 import { Modal } from '../components/modal'
 import { Layout } from '../components/layout'
 
@@ -24,6 +24,7 @@ export type Config = {
   domains: DomainInfo[]
   url: string
   extension: boolean
+  transport: boolean
   ttl?: number
   embed: boolean
   color: string
@@ -66,6 +67,7 @@ const generateConfig = (config: Config) => {
   shareX.Arguments.extension = config.extension
   shareX.Arguments.embed = config.embed
   shareX.Arguments.ttl = config.ttl
+  shareX.Arguments.transport = config.transport
   if (config.embed) {
     if (config.color && config.color !== '')
       shareX.Arguments.color = config.color
@@ -86,6 +88,7 @@ export default function Index() {
     domains: [{ name: 'i.jnr.cx', real: true }],
     url: 'normal',
     extension: false,
+    transport: false,
     ttl: undefined,
     embed: false,
     color: '',
@@ -108,7 +111,7 @@ export default function Index() {
             position="center"
             style={{ marginBottom: 5, marginTop: theme.spacing.sm }}
           >
-            <Title order={2}>Config Creator</Title>
+            <Title order={1}>Configuration</Title>
           </Group>
 
           <Group position="apart" style={{ marginBottom: 14 }}>
@@ -145,6 +148,21 @@ export default function Index() {
           </Group>
 
           <Group position="apart" style={{ marginBottom: 14 }}>
+            <Text>Time to live</Text>
+            <NumberInput
+              placeholder="120 seconds"
+              min={60}
+              value={config.ttl}
+              onChange={(val: any) =>
+                updateConfig({
+                  ...config,
+                  ttl: val,
+                })
+              }
+            />
+          </Group>
+
+          <Group position="apart" style={{ marginBottom: 14 }}>
             <Text>File Extension</Text>
             <Switch
               onLabel="ON"
@@ -162,15 +180,16 @@ export default function Index() {
           </Group>
 
           <Group position="apart" style={{ marginBottom: 14 }}>
-            <Text>Time to live</Text>
-            <NumberInput
-              placeholder="120 seconds"
-              min={60}
-              value={config.ttl}
-              onChange={(val: any) =>
+            <Text>IP Transfer</Text>
+            <Switch
+              onLabel="ON"
+              offLabel="OFF"
+              size="lg"
+              checked={config.transport}
+              onChange={(data: { currentTarget: { checked: any } }) =>
                 updateConfig({
                   ...config,
-                  ttl: val,
+                  transport: data.currentTarget.checked,
                 })
               }
             />
@@ -194,7 +213,9 @@ export default function Index() {
               <ColorInput
                 placeholder="Pick color"
                 value={config.color}
-                onChange={(data: any) => updateConfig({ ...config, color: data })}
+                onChange={(data: any) =>
+                  updateConfig({ ...config, color: data })
+                }
               />
             </Group>
             <Group position="apart" style={{ marginBottom: 14 }}>
