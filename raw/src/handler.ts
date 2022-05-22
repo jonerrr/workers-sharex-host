@@ -23,16 +23,17 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   const url = new URL(request.url)
   const key = url.pathname.split('/').pop()
-  if(!key || key.length === 0)
-    return Response.redirect(HOME, 308)
+  if (!key || key.length === 0) return Response.redirect(HOME, 308)
 
-  if (!key || key.length < 10)
+  if (!key || (key.length < 10 && key !== 't'))
     return response({ message: 'Invalid file code' }, 400, 'application/json')
 
   // Getting the data ID from the URL path can be different depending on how the routes are set up.
   const data: KVNamespaceGetWithMetadataResult<ArrayBuffer, Metadata> =
     await DATA.getWithMetadata(
-      url.pathname.split('/').pop() as string,
+      key === 't'
+        ? (request.headers.get('CF-Connecting-IP') as string)
+        : (url.pathname.split('/').pop() as string),
       'arrayBuffer',
     )
   if (!data.value || !data.metadata)
