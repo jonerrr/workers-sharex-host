@@ -25,7 +25,7 @@ export async function handleRequest(request: Request): Promise<Response> {
   const key = url.pathname.split('/').pop()
   if (!key || key.length === 0) return Response.redirect(HOME, 308)
 
-  if (!key || (key.length < 10 && key !== 't'))
+  if (!key || (key.length < 3 && key !== 't'))
     return response({ message: 'Invalid file code' }, 400, 'application/json')
 
   // Getting the data ID from the URL path can be different depending on how the routes are set up.

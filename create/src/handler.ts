@@ -56,6 +56,14 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   const metadata: Metadata = {}
 
+  let id =
+    form.get('url') === 'invisible'
+      ? chance.string({
+          length: 56,
+          pool: ['\u200B', '\u200C'].join(''),
+        })
+      : nanoid(10)
+
   const ttl = form.get('ttl')
   if (ttl && typeof ttl === 'string') {
     const time = parseInt(ttl)
@@ -68,15 +76,9 @@ export async function handleRequest(request: Request): Promise<Response> {
         'application/json',
       )
     metadata.expire = time
+    const len = Math.floor(time / 80)
+    id = nanoid(len >= 3 ? len : 3)
   }
-
-  let id =
-    form.get('url') === 'invisible'
-      ? chance.string({
-          length: 56,
-          pool: ['\u200B', '\u200C'].join(''),
-        })
-      : nanoid(10)
 
   switch (form.get('type')) {
     case 'url':
@@ -186,10 +188,20 @@ export async function handleRequest(request: Request): Promise<Response> {
     }
     domain = domainsParsed[Math.floor(Math.random() * domainsParsed.length)]
 
-    await DATA.put(encodeURI(id), data, {
-      metadata,
-      expirationTtl: metadata.expire,
-    })
+    let put = false
+
+    while (!put) {
+      const check = await DATA.get(encodeURI(id))
+      if (check) {
+        id = nanoid(5)
+        continue
+      }
+      await DATA.put(encodeURI(id), data, {
+        metadata,
+        expirationTtl: metadata.expire,
+      })
+      put = true
+    }
 
     return response(
       {

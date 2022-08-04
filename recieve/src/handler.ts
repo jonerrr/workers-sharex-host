@@ -28,7 +28,7 @@ export async function handleRequest(request: Request): Promise<Response> {
     })
 
   const deletionCode = url.searchParams.get('delete')
-  if (!dataCode || (dataCode.length < 10 && dataCode !== 't'))
+  if (!dataCode || (dataCode.length < 3 && dataCode !== 't'))
     return response({ message: 'Invalid data code' }, 400, 'application/json')
 
   const data: KVNamespaceGetWithMetadataResult<ArrayBuffer, Metadata> =
